@@ -5,6 +5,8 @@
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
 #include <unistd.h>
+#include <net/if.h>
+#include <cstring>
 
 int main() {
     // Create a raw socket
@@ -14,6 +16,17 @@ int main() {
         return -1;
     }
 
+    std::string interfaceName;
+    std::cout << "Enter a network interface : ";
+    std::cin >> interfaceName;
+    std::cout << "Listening on interface " << interfaceName << std::endl;
+
+    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, interfaceName.c_str(), interfaceName.size()) < 0) {
+        std::cerr << "Failed to bind to interface " << interfaceName << std::endl;
+        close(sockfd);
+        return -1;
+    }
+    
     const unsigned int bufferSize = 65536;
     char buffer[bufferSize];
 
@@ -28,9 +41,8 @@ int main() {
         }
 
         // Process the packet (buffer) here
-        // ...
 
-        std::cout << buffer << std::endl;
+        std::cout << "Packet received!" << std::endl;
     }
 
     // Close the socket when done
